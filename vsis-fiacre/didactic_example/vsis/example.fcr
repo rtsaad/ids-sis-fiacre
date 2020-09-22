@@ -1,0 +1,131 @@
+type INPUT is array 8 of bool
+type OUTPUT is array 4 of bool
+
+task f_read () : INPUT is f_read
+task f_write (OUTPUT) : nat is f_write
+
+function v2oo3(A: bool, B: bool, C: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (A and B) or (B and C) or (A and C);
+        return Q
+    end
+
+
+///////////////////////////////////////////////////////////////////////// SCAN:
+
+process Scan 
+	[portTON_IN_1: out bool, portTON_Q_1: in bool, portTON_IN_2: out bool, portTON_Q_2: in bool]                // used by IN_02
+	
+    is
+    states start_reading, end_reading, initial, rung_1, rung_1_step2, rung_2, rung_2_step2, rung_3, rung_4, start_writing, end_writing, final
+    var IN_01: bool := false,
+        IN_02: bool := false,
+        IN_03: bool := false,
+        IN_04: bool := false,
+        IN_05: bool := false,
+        IN_06A: bool := false,
+        IN_06B: bool := false,
+        IN_06C: bool := false,
+		state_vote: bool := false,
+        Q_01: bool := false,
+        Q_02: bool := false,
+        Q_03: bool := false,
+        Q_04: bool := false,
+		TON_IN: bool := false,
+        TON_Q_1, TON_Q_2 : bool := false,
+        tmp: INPUT := [false,false,false,false,false,false,false,false],
+        tmp2: OUTPUT := [false,false,false,false],
+        tmp3: nat
+
+    init
+        to start_reading
+    from start_reading
+    	start f_read();
+    	to end_reading
+    
+    from end_reading
+    	sync f_read tmp;
+    	IN_01 := tmp[0];
+    	IN_02 := tmp[1];
+    	IN_03 := tmp[2];
+    	IN_04 := tmp[3];
+    	IN_05 := tmp[4];
+    	IN_06A := tmp[5];
+    	IN_06B := tmp[6];
+    	IN_06C := tmp[7];    	
+    	to initial
+    
+    from initial wait[0,0]; to rung_1
+
+    from rung_1 portTON_IN_1! IN_02; to rung_1_step2
+    from rung_1_step2 portTON_Q_1? TON_Q_1; Q_01 := IN_01 or TON_Q_1; to rung_2
+
+    from rung_2 portTON_IN_2! IN_04; to rung_2_step2
+    from rung_2_step2 portTON_Q_2? TON_Q_2; Q_02 := (IN_01 and IN_03) or IN_05 or TON_Q_2; to rung_3
+    
+    from rung_3 Q_03 := IN_06A or IN_06B or IN_06C;  wait[0,0]; to rung_4
+
+    from rung_4 state_vote := v2oo3(IN_06A, IN_06B, IN_06C); Q_04 := state_vote or IN_05;  wait[0,0]; to start_writing
+
+    from start_writing	start f_write([Q_01, Q_02, Q_03, Q_04]); to end_writing    
+
+    from end_writing sync f_write tmp3; to final    
+
+    from final  wait[0,0]; to start_reading
+		
+///////////////////////////////////////////////////////////////////////// TON:
+
+process TON
+    [portIN: in bool, portQ: out bool, portTimer: sync]
+    is
+    states idle, running, elapsed
+    var IN: bool := false,
+        Q: bool := false
+    init
+        to idle
+    from idle select
+        portIN? IN;
+        if IN then
+            to running
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+    from running select
+        portIN? IN;
+        if not IN then
+            to idle
+        else
+            loop
+        end
+    []  portTimer; Q := true; to elapsed
+    []  portQ! Q; loop
+    end
+    from elapsed select
+        portIN? IN;
+        if not IN then
+            Q := false; to idle
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+
+///////////////////////////////////////////////////////////////////////// PLC:
+
+component PLC
+    is
+	port portTON_IN_1, portTON_IN_2: in out bool in [0,0],
+        portTON_Q_1, portTON_Q_2: in out bool in [0,0],
+        portTON_Timer_1, portTON_Timer_2: sync in [10,10]
+    priority portTON_Timer_1 > portTON_Q_1,
+             portTON_Timer_2 > portTON_Q_2
+    par * in
+        Scan [portTON_IN_1, portTON_Q_1, portTON_IN_2, portTON_Q_2]
+	||  TON [portTON_IN_1, portTON_Q_1, portTON_Timer_1]
+    ||  TON [portTON_IN_2, portTON_Q_2, portTON_Timer_2]
+    end
+
+PLC

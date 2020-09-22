@@ -1,0 +1,846 @@
+///////////////////////////////////
+// Pre Processing Configuration  //
+///////////////////////////////////
+
+#ifndef VERIFY_INPUTS
+#define VERIFY_INPUTS       FALSE
+#endif
+
+#ifndef VERIFY_2oo4
+#define VERIFY_2oo4         FALSE
+#endif
+
+#ifndef VERIFY_2oo5
+#define VERIFY_2oo5         FALSE
+#endif
+
+#ifndef VERIFY_2oo7
+#define VERIFY_2oo7         FALSE
+#endif
+
+#ifndef VERIFY_2oo10
+#define VERIFY_2oo10        FALSE
+#endif
+
+//////////////////////////////////
+
+// Types
+const max_changes: nat is 1
+type changes is 0..max_changes
+
+
+type INPUT is array 29 of bool
+type OUTPUT is array 4 of bool
+
+// Local Functions
+function v1oo4(A: bool, B: bool, C: bool, D:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D;
+        return Q
+    end
+
+function v1oo7(A: bool, B: bool, C: bool, D:bool, E:bool, F:bool, G:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D or E or F or G;
+        return Q
+    end
+
+function v1oo10(A: bool, B: bool, C: bool, D:bool, E:bool, F:bool, G:bool, H:bool, I:bool, J:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D or E or F or G or H or I or J;
+        return Q
+    end
+
+function v2oo3(A: bool, B: bool, C: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (A and B) or (B and C) or (A and C);
+        return Q
+    end
+
+function v2oo4(I1: bool, I2: bool, I3: bool, I4: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4)
+                or (I2 and I3) or (I2 and I4)
+                or (I3 and I4);
+        return Q
+    end
+
+function v2oo5(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5)
+                or (I3 and I4) or (I3 and I5)
+                or (I4 and I5);
+        return Q
+    end
+
+function v2oo7(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool, I6: bool, I7: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5) or (I1 and I6) or (I1 and I7)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5) or (I2 and I6) or (I2 and I7)
+                or (I3 and I4) or (I3 and I5) or (I3 and I6) or (I3 and I7)
+                or (I4 and I5) or (I4 and I6) or (I4 and I7)
+                or (I5 and I6) or (I5 and I7)
+                or (I6 and I7);
+        return Q
+    end 
+
+function v2oo10(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool, I6: bool, I7: bool, I8: bool, I9: bool, I10: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5) or (I1 and I6) or (I1 and I7) or (I1 and I8) or (I1 and I9) or (I1 and I10)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5) or (I2 and I6) or (I2 and I7) or (I2 and I8) or (I2 and I9) or (I2 and I10)
+                or (I3 and I4) or (I3 and I5) or (I3 and I6) or (I3 and I7) or (I3 and I8) or (I3 and I9) or (I3 and I10)   
+                or (I4 and I5) or (I4 and I6) or (I4 and I7) or (I4 and I8) or (I4 and I9) or (I4 and I10)
+                or (I5 and I6) or (I5 and I7) or (I5 and I8) or (I5 and I9) or (I5 and I10)
+                or (I6 and I7) or (I6 and I8) or (I6 and I9) or (I6 and I10)
+                or (I7 and I8) or (I7 and I9) or (I7 and I10)      
+                or (I8 and I9) or (I8 and I10)  
+                or (I9 and I10);
+        return Q
+    end
+
+function analog_to_bool(value: nat, level_h: bool, threshould: nat) : bool is
+    var Q: bool := false
+    begin
+        if level_h then
+            if (value >= threshould) then
+                return true
+            else
+                return false
+            end
+        else 
+            if value <= threshould then
+                return true
+            else
+                return false
+            end
+        end
+    end
+	
+
+// SCAN Process
+process Scan 
+    [portTON_IN_1: out bool, portTON_Q_1: in bool,
+     portTON_IN_2: out bool, portTON_Q_2: in bool]    
+    is
+    states reading, initial, 
+        votting, start_ust_2oo7, end_ust_2oo7,  start_ust_1oo7, end_ust_1oo7,
+        rung_1,  rung_3, rung_4, rung_5, writing, final
+        
+    var INPUT_001_007_HH: array 7 of bool := [false,false,false,false,false,false,false],
+        INPUT_008_L: bool := false,
+        INPUT_009_013_HH: array 5 of bool := [false,false,false,false, false],
+        INPUT_014_023_HH: array 10 of bool := [false,false,false,false,false,false,false,false,false,false],
+        INPUT_024_027_HH: array 4 of bool := [false,false,false,false],
+        OUTPUT_1: bool := false,      
+        INPUT_29_CMZ: bool := false,                     
+        state_n: changes := 0,
+		/* Outputs */
+        OUTPUT_2,OUTPUT_2_P: bool := false,
+        INPUT_028_CMZ: bool := false,
+        OUTPUT_3: bool := false, 
+        OUTPUT_4: bool := false, 
+		/* Internal Vars*/
+        TON_Q_1, TON_Q_2: bool := false,
+        tmp_input: INPUT := [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],
+        tmp_output: OUTPUT := [false,false,false,false],
+        state_vote_2oo7_INPUT_001_007, state_vote_2oo7_INPUT_001_007_ON: bool := false, 
+        state_vote_1oo7_INPUT_001_007, state_vote_1oo7_INPUT_001_007_ON: bool := false, 
+        state_vote_2oo5_INPUT_009_013: bool := false, 
+        state_vote_2oo10_INPUT_014_023: bool := false, 
+        state_vote_2oo4_INPUT_024_027: bool := false
+
+    init
+        to reading
+
+    from reading	
+				INPUT_001_007_HH[0] := tmp_input[0];
+				INPUT_001_007_HH[1] := tmp_input[1];
+				INPUT_001_007_HH[2] := tmp_input[2];
+				INPUT_001_007_HH[3] := tmp_input[3];
+				INPUT_001_007_HH[4] := tmp_input[4];
+				INPUT_001_007_HH[5] := tmp_input[5];
+				INPUT_001_007_HH[6] := tmp_input[6];
+    	
+        INPUT_008_L := tmp_input[7];
+
+        INPUT_009_013_HH[0] := tmp_input[8];
+        INPUT_009_013_HH[1] := tmp_input[9];
+        INPUT_009_013_HH[2] := tmp_input[10];
+        INPUT_009_013_HH[3] := tmp_input[11];
+        INPUT_009_013_HH[4] := tmp_input[12];
+
+        INPUT_014_023_HH[0] := tmp_input[13];
+        INPUT_014_023_HH[1] := tmp_input[14];
+        INPUT_014_023_HH[2] := tmp_input[15];
+        INPUT_014_023_HH[3] := tmp_input[16];
+        INPUT_014_023_HH[4] := tmp_input[17];
+        INPUT_014_023_HH[5] := tmp_input[18];
+        INPUT_014_023_HH[6] := tmp_input[19];
+        INPUT_014_023_HH[7] := tmp_input[20];
+        INPUT_014_023_HH[8] := tmp_input[21];
+        INPUT_014_023_HH[9] := tmp_input[22];
+
+        INPUT_024_027_HH[0] := tmp_input[23];
+        INPUT_024_027_HH[1] := tmp_input[24];
+        INPUT_024_027_HH[2] := tmp_input[25];
+        INPUT_024_027_HH[3] := tmp_input[26];
+
+        INPUT_028_CMZ  := tmp_input[27];
+        INPUT_29_CMZ  :=  tmp_input[28];
+    	
+        wait[0,0]; to votting
+   
+   
+    from votting
+        state_vote_2oo7_INPUT_001_007_ON := v2oo7(INPUT_001_007_HH[0], INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5], INPUT_001_007_HH[6]);
+        state_vote_1oo7_INPUT_001_007_ON := v1oo7(INPUT_001_007_HH[0], INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5], INPUT_001_007_HH[6]);
+        state_vote_2oo5_INPUT_009_013 := v2oo5(INPUT_009_013_HH[0], INPUT_009_013_HH[1], INPUT_009_013_HH[2], INPUT_009_013_HH[3], INPUT_009_013_HH[4]);
+        state_vote_2oo10_INPUT_014_023 := v2oo10(INPUT_014_023_HH[0], INPUT_014_023_HH[1], INPUT_014_023_HH[2], INPUT_014_023_HH[3], INPUT_014_023_HH[4], INPUT_014_023_HH[5], INPUT_014_023_HH[6], INPUT_014_023_HH[7], INPUT_014_023_HH[8], INPUT_014_023_HH[9]);               
+        state_vote_2oo4_INPUT_024_027  := v2oo4(INPUT_024_027_HH[0], INPUT_024_027_HH[1], INPUT_024_027_HH[2], INPUT_024_027_HH[3]);
+
+      wait[0,0]; to start_ust_2oo7
+
+    from start_ust_2oo7
+        portTON_IN_1! state_vote_2oo7_INPUT_001_007_ON;
+        to end_ust_2oo7
+
+    from end_ust_2oo7
+        portTON_Q_1? TON_Q_1;  state_vote_2oo7_INPUT_001_007 := TON_Q_1 and state_vote_2oo7_INPUT_001_007_ON; to start_ust_1oo7
+
+    from start_ust_1oo7
+        portTON_IN_2! state_vote_1oo7_INPUT_001_007_ON;
+        to end_ust_1oo7
+
+    from end_ust_1oo7
+        portTON_Q_2? TON_Q_2;  state_vote_1oo7_INPUT_001_007 := TON_Q_2 and state_vote_1oo7_INPUT_001_007_ON; to initial
+    
+    from initial wait[0,0]; to rung_1
+
+    from rung_1         
+        OUTPUT_1 := state_vote_2oo7_INPUT_001_007 or (state_vote_1oo7_INPUT_001_007 and INPUT_008_L) or state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to rung_3
+
+    from rung_3 
+        if INPUT_028_CMZ=true then
+            OUTPUT_2 := false; 
+            wait[0,0]; to rung_4
+        else
+            OUTPUT_2 := (OUTPUT_2 or (state_vote_2oo7_INPUT_001_007 or state_vote_1oo7_INPUT_001_007 or INPUT_008_L));
+            wait[0,0]; to rung_4
+        end       
+        
+
+    from rung_4 
+        OUTPUT_3 := state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to rung_5
+        
+
+    from rung_5
+        OUTPUT_4 := state_vote_2oo7_INPUT_001_007 or (state_vote_1oo7_INPUT_001_007 and INPUT_008_L) or state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to writing
+
+    from writing wait[0,0]; to final    
+
+    from final wait[1,1];
+		OUTPUT_2_P := OUTPUT_2;	
+		if (state_n < max_changes) then
+#ifeq VERIFY_INPUTS TRUE
+					tmp_input[0]:=any;
+					tmp_input[1]:=any;
+					tmp_input[2]:=false;
+					tmp_input[3]:=false;
+					tmp_input[4]:=false;
+					tmp_input[5]:=false;
+					tmp_input[6]:=false;
+					tmp_input[7]:=any;
+					tmp_input[8]:=any;
+					tmp_input[9]:=true;
+					tmp_input[10]:=false;
+					tmp_input[11]:=false;
+					tmp_input[12]:=false;
+					tmp_input[13]:=any;
+					tmp_input[14]:=true;
+					tmp_input[15]:=false;
+					tmp_input[16]:=false;
+					tmp_input[17]:=false;
+					tmp_input[18]:=false;
+					tmp_input[19]:=false;
+					tmp_input[20]:=false;
+					tmp_input[21]:=false;
+					tmp_input[22]:=false;
+					tmp_input[23]:=any;
+					tmp_input[24]:=true;
+					tmp_input[25]:=false;
+					tmp_input[26]:=false;
+					tmp_input[27]:=any;
+					tmp_input[28]:=any;			
+#endif
+#ifeq VERIFY_2oo4 TRUE
+          tmp_input[0]:=false;
+					tmp_input[1]:=false;
+					tmp_input[2]:=false;
+					tmp_input[3]:=false;
+					tmp_input[4]:=false;
+					tmp_input[5]:=false;
+					tmp_input[6]:=false;
+					tmp_input[7]:=false;
+					tmp_input[8]:=false;
+					tmp_input[9]:=false;
+					tmp_input[10]:=false;
+					tmp_input[11]:=false;
+					tmp_input[12]:=false;
+					tmp_input[13]:=false;
+					tmp_input[14]:=false;
+					tmp_input[15]:=false;
+					tmp_input[16]:=false;
+					tmp_input[17]:=false;
+					tmp_input[18]:=false;
+					tmp_input[19]:=false;
+					tmp_input[20]:=false;
+					tmp_input[21]:=false;
+					tmp_input[22]:=false;
+					tmp_input[23]:=any;
+					tmp_input[24]:=any;
+					tmp_input[25]:=any;
+					tmp_input[26]:=any;
+					tmp_input[27]:=false;
+					tmp_input[28]:=false;
+#endif
+#ifeq VERIFY_2oo5 TRUE
+          tmp_input[0]:=false;
+					tmp_input[1]:=false;
+					tmp_input[2]:=false;
+					tmp_input[3]:=false;
+					tmp_input[4]:=false;
+					tmp_input[5]:=false;
+					tmp_input[6]:=false;
+					tmp_input[7]:=false;
+					tmp_input[8]:=any;
+					tmp_input[9]:=any;
+					tmp_input[10]:=any;
+					tmp_input[11]:=any;
+					tmp_input[12]:=any;
+					tmp_input[13]:=false;
+					tmp_input[14]:=false;
+					tmp_input[15]:=false;
+					tmp_input[16]:=false;
+					tmp_input[17]:=false;
+					tmp_input[18]:=false;
+					tmp_input[19]:=false;
+					tmp_input[20]:=false;
+					tmp_input[21]:=false;
+					tmp_input[22]:=false;
+					tmp_input[23]:=false;
+					tmp_input[24]:=false;
+					tmp_input[25]:=false;
+					tmp_input[26]:=false;
+					tmp_input[27]:=false;
+					tmp_input[28]:=false;
+#endif
+#ifeq VERIFY_2oo7 TRUE
+          tmp_input[0]:=any;
+					tmp_input[1]:=any;
+					tmp_input[2]:=any;
+					tmp_input[3]:=any;
+					tmp_input[4]:=any;
+					tmp_input[5]:=any;
+					tmp_input[6]:=any;
+					tmp_input[7]:=false;
+					tmp_input[8]:=false;
+					tmp_input[9]:=false;
+					tmp_input[10]:=false;
+					tmp_input[11]:=false;
+					tmp_input[12]:=false;
+					tmp_input[13]:=false;
+					tmp_input[14]:=false;
+					tmp_input[15]:=false;
+					tmp_input[16]:=false;
+					tmp_input[17]:=false;
+					tmp_input[18]:=false;
+					tmp_input[19]:=false;
+					tmp_input[20]:=false;
+					tmp_input[21]:=false;
+					tmp_input[22]:=false;
+					tmp_input[23]:=false;
+					tmp_input[24]:=false;
+					tmp_input[25]:=false;
+					tmp_input[26]:=false;
+					tmp_input[27]:=false;
+					tmp_input[28]:=false;
+#endif
+#ifeq VERIFY_2oo10 TRUE
+          tmp_input[0]:=false;
+					tmp_input[1]:=false;
+					tmp_input[2]:=false;
+					tmp_input[3]:=false;
+					tmp_input[4]:=false;
+					tmp_input[5]:=false;
+					tmp_input[6]:=false;
+					tmp_input[7]:=false;
+					tmp_input[8]:=false;
+					tmp_input[9]:=false;
+					tmp_input[10]:=false;
+					tmp_input[11]:=false;
+					tmp_input[12]:=false;
+					tmp_input[13]:=any;
+					tmp_input[14]:=any;
+					tmp_input[15]:=any;
+					tmp_input[16]:=any;
+					tmp_input[17]:=any;
+					tmp_input[18]:=any;
+					tmp_input[19]:=any;
+					tmp_input[20]:=any;
+					tmp_input[21]:=any;
+					tmp_input[22]:=any;
+					tmp_input[23]:=false;
+					tmp_input[24]:=false;
+					tmp_input[25]:=false;
+					tmp_input[26]:=false;
+					tmp_input[27]:=false;
+					tmp_input[28]:=false;
+#endif
+        state_n := state_n+1
+		end;
+        
+        to reading
+
+///////////////////////////////////////////////////////////////////////// TON:
+
+process TON
+    [portIN: in bool, portQ: out bool, portTimer: sync]
+    is
+    states idle, running, elapsed
+    var IN: bool := false,
+        Q: bool := false
+    init
+        to idle
+    from idle select
+        portIN? IN;
+        if IN then
+            to running
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+    from running select
+        portIN? IN;
+        if not IN then
+            to idle
+        else
+            loop
+        end
+    []  portTimer; Q := true; to elapsed
+    []  portQ! Q; loop
+    end
+    from elapsed select
+        portIN? IN;
+        if not IN then
+            Q := false; to idle
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+
+///////////////////////////////////////////////////////////////////////// PLC:
+
+component PLC
+    is
+	port portTON_IN_1, portTON_IN_2: in out bool in [0,0],
+        portTON_Q_1, portTON_Q_2: in out bool in [0,0],
+        portTON_Timer_1, portTON_Timer_2: sync in [10,10] 
+    priority portTON_Timer_1 > portTON_Q_1,
+              portTON_Timer_2 > portTON_Q_2
+    par * in
+        Scan [portTON_IN_1, portTON_Q_1, portTON_IN_2, portTON_Q_2]
+	||  TON [portTON_IN_1, portTON_Q_1, portTON_Timer_1]
+    ||  TON [portTON_IN_2, portTON_Q_2, portTON_Timer_2]
+    end
+
+
+
+///////////////////////////////////////////////////////////////////////// Verification Only
+
+///////////////////////////////////////////////////////////////////////// VOTING:
+
+type bit is 0..1
+
+function bool2bit (b: bool) : bit is
+    begin
+        if b then
+            return 1
+        else
+            return 0
+        end
+    end
+
+// Here is every Fcrpoll info in this list...
+function vote1oo4(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) >= 1)
+    end
+
+function vote2oo4(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) >= 2)
+    end
+
+
+function vote1oo5(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) >= 1)
+    end
+
+function vote2oo5(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) >= 2)
+    end
+
+function vote1oo7(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool, 
+				f0: bool, 
+				g0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) 
+				+ bool2bit(f0) 
+				+ bool2bit(g0) >= 1)
+    end
+
+function vote2oo7(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool, 
+				f0: bool, 
+				g0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) 
+				+ bool2bit(f0) 
+				+ bool2bit(g0) >= 2)
+    end
+
+function vote1oo10(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool, 
+				f0: bool, 
+				g0: bool, 
+				h0: bool, 
+				i0: bool, 
+				j0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) 
+				+ bool2bit(f0) 
+				+ bool2bit(g0) 
+				+ bool2bit(h0) 
+				+ bool2bit(i0) 
+				+ bool2bit(j0) >= 1)
+    end
+
+function vote2oo10(a0: bool, 
+				b0: bool, 
+				c0: bool, 
+				d0: bool, 
+				e0: bool, 
+				f0: bool, 
+				g0: bool, 
+				h0: bool, 
+				i0: bool, 
+				j0: bool) : bool is
+    begin
+        return (bool2bit(a0) 
+				+ bool2bit(b0) 
+				+ bool2bit(c0) 
+				+ bool2bit(d0) 
+				+ bool2bit(e0) 
+				+ bool2bit(f0) 
+				+ bool2bit(g0) 
+				+ bool2bit(h0) 
+				+ bool2bit(i0) 
+				+ bool2bit(j0) >= 2)
+    end	
+
+
+	
+PLC
+///////////////////////////////////////////////////////////////////////// OBSERVER:
+
+process timed_input [ITrue,IFalse,T: sync] is
+    states varFalse , varTrueUntimed , varTrueTimed
+    init to
+        varFalse
+    from varFalse
+        ITrue; to varTrueUntimed
+    from varTrueUntimed select
+        T; to varTrueTimed
+    []  IFalse; to varFalse
+    end
+    from varTrueTimed
+        IFalse; to varFalse
+
+// Here is every Fcrtimer info in this list...
+
+component obs_Vote2oo7_T10 is
+    port ITrue: sync in [0,0] is  (PLC/1/value  (vote2oo7(INPUT_001_007_HH[0],
+						INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6]))),
+        IFalse: sync in [0,0] is  (PLC/1/value (not (vote2oo7(INPUT_001_007_HH[0],
+						INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))),
+        T: sync in [10,10]
+    priority IFalse > T
+    par
+        timed_input [ITrue,IFalse,T]
+    end
+
+obs_Vote2oo7_T10 > PLC
+
+component obs_Vote1oo7_T10 is
+    port ITrue: sync in [0,0] is  (PLC/1/value  (vote1oo7(INPUT_001_007_HH[0],
+						INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6]))),
+        IFalse: sync in [0,0] is  (PLC/1/value (not (vote1oo7(INPUT_001_007_HH[0],
+						INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))),
+        T: sync in [10,10]
+    priority IFalse > T
+    par
+        timed_input [ITrue,IFalse,T]
+    end
+
+obs_Vote1oo7_T10 > PLC
+
+
+
+
+//property timer_will_happen is ltl <> (obs_IN_02_10/1/state varTrueTimed)
+//assert timer_will_happen
+
+property write is ltl (PLC/1/state writing)
+
+#ifeq VERIFY_INPUTS TRUE										
+	property cause_1 is ltl ((obs_Vote2oo7_T10/1/state varTrueTimed)
+							or ((obs_Vote1oo7_T10/1/state varTrueTimed) 
+								and (PLC/1/value (INPUT_008_L)))
+							or (PLC/1/value (vote2oo5(INPUT_009_013_HH[0],
+													INPUT_009_013_HH[1],
+													INPUT_009_013_HH[2],
+													INPUT_009_013_HH[3],
+													INPUT_009_013_HH[4])))
+							or (PLC/1/value (vote2oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+							or (PLC/1/value (vote2oo4(INPUT_024_027_HH[0],
+													INPUT_024_027_HH[1],
+													INPUT_024_027_HH[2],
+													INPUT_024_027_HH[3]))))
+	property effect_1 is ltl (PLC/1/value OUTPUT_1)
+	property n_df_1 is ltl []((write and cause_1) => effect_1)
+	property n_sf_1 is ltl []not (write and (not cause_1) and (effect_1))
+	assert n_df_1
+	assert n_sf_1
+
+	property cause_3 is ltl (((PLC/1/value OUTPUT_2_P)
+							or (obs_Vote2oo7_T10/1/state varTrueTimed)
+							or (obs_Vote1oo7_T10/1/state varTrueTimed) 
+							or (PLC/1/value INPUT_008_L))
+							and not (PLC/1/value INPUT_028_CMZ))
+	property effect_3 is ltl (PLC/1/value OUTPUT_2)
+	property n_df_3 is ltl []((write and cause_3) => effect_3)
+	property n_sf_3 is ltl [] not (write and (not cause_3) and (effect_3))
+	assert n_df_3
+	assert n_sf_3 
+
+	property cause_4 is ltl ((PLC/1/value (vote2oo5(INPUT_009_013_HH[0],
+													INPUT_009_013_HH[1],
+													INPUT_009_013_HH[2],
+													INPUT_009_013_HH[3],
+													INPUT_009_013_HH[4])))
+							or (PLC/1/value (vote2oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+							or (PLC/1/value (vote2oo4(INPUT_024_027_HH[0],
+													INPUT_024_027_HH[1],
+													INPUT_024_027_HH[2],
+													INPUT_024_027_HH[3]))))
+	property effect_4 is ltl (PLC/1/value OUTPUT_3)
+	property n_df_4 is ltl []((write and cause_4) => effect_4)
+	property n_sf_4 is ltl [] not (write and (not cause_4) and (effect_4))
+	assert n_df_4
+	assert n_sf_4 
+
+	property cause_5 is ltl cause_1
+	property effect_5 is ltl (PLC/1/value OUTPUT_4)
+	property n_df_5 is ltl []((write and cause_5) => effect_5)
+	property n_sf_5 is ltl [] not (write and (not cause_5) and (effect_5))
+	assert n_df_5
+	assert n_sf_5 
+#endif
+
+#ifeq VERIFY_2oo4 TRUE
+	property cause_v2oo4 is ltl (PLC/1/value (vote2oo4(INPUT_024_027_HH[0],
+													INPUT_024_027_HH[1],
+													INPUT_024_027_HH[2],
+													INPUT_024_027_HH[3])))
+	property effect_v2oo4 is ltl (PLC/1/value (v2oo4(INPUT_024_027_HH[0],
+													INPUT_024_027_HH[1],
+													INPUT_024_027_HH[2],
+													INPUT_024_027_HH[3])))
+	property n_df_v2oo4 is ltl []((write and cause_v2oo4) => effect_v2oo4)
+	property n_sf_v2oo4 is ltl [] not (write and (not cause_v2oo4) and (effect_v2oo4))
+	assert n_df_v2oo4
+	assert n_sf_v2oo4 
+#endif
+
+#ifeq VERIFY_2oo5 TRUE
+	property cause_v2oo5 is ltl (PLC/1/value (vote2oo5(INPUT_009_013_HH[0],
+													INPUT_009_013_HH[1],
+													INPUT_009_013_HH[2],
+													INPUT_009_013_HH[3],
+													INPUT_009_013_HH[4])))
+	property effect_v2oo5 is ltl (PLC/1/value (v2oo5(INPUT_009_013_HH[0],
+													INPUT_009_013_HH[1],
+													INPUT_009_013_HH[2],
+													INPUT_009_013_HH[3],
+													INPUT_009_013_HH[4])))
+	property n_df_v2oo5 is ltl []((write and cause_v2oo5) => effect_v2oo5)
+	property n_sf_v2oo5 is ltl [] not (write and (not cause_v2oo5) and (effect_v2oo5))
+	assert n_df_v2oo5
+	assert n_sf_v2oo5 
+#endif
+
+#ifeq VERIFY_2oo7 TRUE
+	property cause_v1oo7 is ltl (PLC/1/value (vote1oo7(INPUT_001_007_HH[0],
+													INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))
+	property effect_v1oo7 is ltl (PLC/1/value (v1oo7(INPUT_001_007_HH[0],
+													INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))
+	property n_df_v1oo7 is ltl []((write and cause_v1oo7) => effect_v1oo7)
+	property n_sf_v1oo7 is ltl [] not (write and (not cause_v1oo7) and (effect_v1oo7))
+	assert n_df_v1oo7
+	assert n_sf_v1oo7 
+
+	property cause_v2oo7 is ltl (PLC/1/value (vote2oo7(INPUT_001_007_HH[0],
+													INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))
+	property effect_v2oo7 is ltl (PLC/1/value (v2oo7(INPUT_001_007_HH[0],
+													INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5],INPUT_001_007_HH[6])))
+	property n_df_v2oo7 is ltl []((write and cause_v2oo7) => effect_v2oo7)
+	property n_sf_v2oo7 is ltl [] not (write and (not cause_v2oo7) and (effect_v2oo7))
+	assert n_df_v2oo7
+	assert n_sf_v2oo7 
+#endif
+
+#ifeq VERIFY_2oo10 TRUE
+	property cause_v1oo10 is ltl (PLC/1/value (vote1oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+	property effect_v1oo10 is ltl (PLC/1/value (v1oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+	property n_df_v1oo10 is ltl []((write and cause_v1oo10) => effect_v1oo10)
+	property n_sf_v1oo10 is ltl [] not (write and (not cause_v1oo10) and (effect_v1oo10))
+	assert n_df_v1oo10
+	assert n_sf_v1oo10 
+
+	property cause_v2oo10 is ltl (PLC/1/value (vote2oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+	property effect_v2oo10 is ltl (PLC/1/value (v2oo10(INPUT_014_023_HH[0],
+														INPUT_014_023_HH[1],
+														INPUT_014_023_HH[2],
+														INPUT_014_023_HH[3],
+														INPUT_014_023_HH[4],
+														INPUT_014_023_HH[5],
+														INPUT_014_023_HH[6],
+														INPUT_014_023_HH[7],
+														INPUT_014_023_HH[8],
+														INPUT_014_023_HH[9])))
+	property n_df_v2oo10 is ltl []((write and cause_v2oo10) => effect_v2oo10)
+	property n_sf_v2oo10 is ltl [] not (write and (not cause_v2oo10) and (effect_v2oo10))
+	assert n_df_v2oo10
+	assert n_sf_v2oo10 
+#endif

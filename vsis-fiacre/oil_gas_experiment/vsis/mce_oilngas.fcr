@@ -1,0 +1,354 @@
+// Types
+type INPUT is array 29 of nat
+type OUTPUT is array 4 of bool
+
+// External Functions
+task f_read () : INPUT is f_read
+task f_write (OUTPUT) : nat is f_write
+task f_print_b (bool): nat is f_print_b
+task f_print_n (nat): nat is f_print_n
+
+// Local Functions
+function v1oo4(A: bool, B: bool, C: bool, D:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D;
+        return Q
+    end
+
+function v1oo7(A: bool, B: bool, C: bool, D:bool, E:bool, F:bool, G:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D or E or F or G;
+        return Q
+    end
+
+function v1oo10(A: bool, B: bool, C: bool, D:bool, E:bool, F:bool, G:bool, H:bool, I:bool, J:bool) : bool is
+	var Q: bool := false
+    begin
+		Q := A or B or C or D or E or F or G or H or I or J;
+        return Q
+    end
+
+function v2oo3(A: bool, B: bool, C: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (A and B) or (B and C) or (A and C);
+        return Q
+    end
+
+function v2oo4(I1: bool, I2: bool, I3: bool, I4: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4)
+                or (I2 and I3) or (I2 and I4)
+                or (I3 and I4);
+        return Q
+    end
+
+function v2oo5(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5)
+                or (I3 and I4) or (I3 and I5)
+                or (I4 and I5);
+        return Q
+    end
+
+function v2oo7(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool, I6: bool, I7: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5) or (I1 and I6) or (I1 and I7)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5) or (I2 and I6) or (I2 and I7)
+                or (I3 and I4) or (I3 and I5) or (I3 and I6) or (I3 and I7)
+                or (I4 and I5) or (I4 and I6) or (I4 and I7)
+                or (I5 and I6) or (I5 and I7)
+                or (I6 and I7);
+        return Q
+    end 
+
+function v2oo10(I1: bool, I2: bool, I3: bool, I4: bool, I5: bool, I6: bool, I7: bool, I8: bool, I9: bool, I10: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (I1 and I2) or (I1 and I3) or (I1 and I4) or (I1 and I5) or (I1 and I6) or (I1 and I7) or (I1 and I8) or (I1 and I9) or (I1 and I10)
+                or (I2 and I3) or (I2 and I4) or (I2 and I5) or (I2 and I6) or (I2 and I7) or (I2 and I8) or (I2 and I9) or (I2 and I10)
+                or (I3 and I4) or (I3 and I5) or (I3 and I6) or (I3 and I7) or (I3 and I8) or (I3 and I9) or (I3 and I10)   
+                or (I4 and I5) or (I4 and I6) or (I4 and I7) or (I4 and I8) or (I4 and I9) or (I4 and I10)
+                or (I5 and I6) or (I5 and I7) or (I5 and I8) or (I5 and I9) or (I5 and I10)
+                or (I6 and I7) or (I6 and I8) or (I6 and I9) or (I6 and I10)
+                or (I7 and I8) or (I7 and I9) or (I7 and I10)      
+                or (I8 and I9) or (I8 and I10)  
+                or (I9 and I10);
+        return Q
+    end
+
+function analog_to_bool(value: nat, level_h: bool, threshould: nat) : bool is
+    var Q: bool := false
+    begin
+        if level_h then
+            if (value >= threshould) then
+                return true
+            else
+                return false
+            end
+        else 
+            if value <= threshould then
+                return true
+            else
+                return false
+            end
+        end
+    end
+
+// SCAN Process
+process Scan 
+    [portTON_IN_1: out bool, portTON_Q_1: in bool,
+     portTON_IN_2: out bool, portTON_Q_2: in bool]    
+    is
+    states start_reading, end_reading, polarize, initial, 
+        votting, start_ust_2oo7, end_ust_2oo7,  start_ust_1oo7, end_ust_1oo7,
+        rung_1,  rung_3, rung_4, rung_5, start_writing, end_writing, final
+        //start_print1, end_print1//, start_print2, end_print2
+        
+        /*Causes*/
+        var INPUT_001_007: array 7 of nat := [0,0,0,0,0,0,0],
+        INPUT_001_007_HH: array 7 of bool := [false,false,false,false,false,false,false],
+        INPUT_008: nat := 0,
+        INPUT_008_L: bool := false,
+        INPUT_009_013: array 5 of nat := [0,0,0,0,0],
+        INPUT_009_013_HH: array 5 of bool := [false,false,false,false, false],
+        INPUT_014_023: array 10 of nat := [0,0,0,0,0,0,0,0,0,0],
+        INPUT_014_023_HH: array 10 of bool := [false,false,false,false,false,false,false,false,false,false],
+        INPUT_024_027: array 4 of nat := [0,0,0,0],
+        INPUT_024_027_HH: array 4 of bool := [false,false,false,false],
+        OUTPUT_1: bool := false,                          
+        /* Outputs - Effects*/
+        OUTPUT_2: bool := false,
+        INPUT_28_CMZ: nat := 0,
+        OUTPUT_3: bool := false,
+		OUTPUT_4: bool := false,
+        INPUT_29_CMZ: nat := 0, 
+		/* Internal Vars*/
+        TON_Q_1, TON_Q_2: bool := false,
+        tmp_input: INPUT := [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        tmp_output: OUTPUT := [false,false,false,false],
+        tmp_print: nat := 0,
+        result_output: nat := 0,
+        state_vote_2oo7_INPUT_001_007, state_vote_2oo7_INPUT_001_007_ON: bool := false, 
+        state_vote_1oo7_INPUT_001_007, state_vote_1oo7_INPUT_001_007_ON: bool := false, 
+        state_vote_2oo5_INPUT_009_013: bool := false, 
+        state_vote_2oo10_INPUT_014_023: bool := false, 
+        state_vote_2oo4_INPUT_024_027: bool := false
+
+    init
+        to start_reading
+    from start_reading
+    	start f_read();
+    	to end_reading
+    
+    from end_reading
+    	sync f_read tmp_input;
+    	INPUT_001_007[0] := tmp_input[0];
+    	INPUT_001_007[1] := tmp_input[1];
+    	INPUT_001_007[2] := tmp_input[2];
+    	INPUT_001_007[3] := tmp_input[3];
+    	INPUT_001_007[4] := tmp_input[4];
+    	INPUT_001_007[5] := tmp_input[5];
+    	INPUT_001_007[6] := tmp_input[6];
+    	
+        INPUT_008 := tmp_input[7];
+
+        INPUT_009_013[0] := tmp_input[8];
+        INPUT_009_013[1] := tmp_input[9];
+        INPUT_009_013[2] := tmp_input[10];
+        INPUT_009_013[3] := tmp_input[11];
+        INPUT_009_013[4] := tmp_input[12];
+
+        INPUT_014_023[0] := tmp_input[13];
+        INPUT_014_023[1] := tmp_input[14];
+        INPUT_014_023[2] := tmp_input[15];
+        INPUT_014_023[3] := tmp_input[16];
+        INPUT_014_023[4] := tmp_input[17];
+        INPUT_014_023[5] := tmp_input[18];
+        INPUT_014_023[6] := tmp_input[19];
+        INPUT_014_023[7] := tmp_input[20];
+        INPUT_014_023[8] := tmp_input[21];
+        INPUT_014_023[9] := tmp_input[22];
+
+        INPUT_024_027[0] := tmp_input[23];
+        INPUT_024_027[1] := tmp_input[24];
+        INPUT_024_027[2] := tmp_input[25];
+        INPUT_024_027[3] := tmp_input[26];
+
+        INPUT_28_CMZ  := tmp_input[27];
+        INPUT_29_CMZ  :=  tmp_input[28];
+
+    	to polarize
+
+    from polarize 
+        INPUT_001_007_HH[0] := analog_to_bool(INPUT_001_007[0], true, 28800);
+    	INPUT_001_007_HH[1] := analog_to_bool(INPUT_001_007[1], true, 28800);
+    	INPUT_001_007_HH[2] := analog_to_bool(INPUT_001_007[2], true, 28800);
+    	INPUT_001_007_HH[3] := analog_to_bool(INPUT_001_007[3], true, 28800);
+    	INPUT_001_007_HH[4] := analog_to_bool(INPUT_001_007[4], true, 28800);
+    	INPUT_001_007_HH[5] := analog_to_bool(INPUT_001_007[5], true, 28800);
+    	INPUT_001_007_HH[6] := analog_to_bool(INPUT_001_007[6], true, 28800);
+
+        INPUT_008_L := analog_to_bool(INPUT_008, false, 6563);
+    
+        INPUT_009_013_HH[0] := analog_to_bool(INPUT_009_013[0], true, 15600);
+        INPUT_009_013_HH[1] := analog_to_bool(INPUT_009_013[1], true, 15600);
+        INPUT_009_013_HH[2] := analog_to_bool(INPUT_009_013[2], true, 20400);
+        INPUT_009_013_HH[3] := analog_to_bool(INPUT_009_013[3], true, 20400);
+        INPUT_009_013_HH[4] := analog_to_bool(INPUT_009_013[4], true, 20400);
+
+        INPUT_014_023_HH[0] := analog_to_bool(INPUT_014_023[0], true, 20400);
+        INPUT_014_023_HH[1] := analog_to_bool(INPUT_014_023[1], true, 20400);
+        INPUT_014_023_HH[2] := analog_to_bool(INPUT_014_023[2], true, 20400);
+        INPUT_014_023_HH[3] := analog_to_bool(INPUT_014_023[3], true, 20400);
+        INPUT_014_023_HH[4] := analog_to_bool(INPUT_014_023[4], true, 20400);
+        INPUT_014_023_HH[5] := analog_to_bool(INPUT_014_023[5], true, 20400);
+        INPUT_014_023_HH[6] := analog_to_bool(INPUT_014_023[6], true, 20400);
+        INPUT_014_023_HH[7] := analog_to_bool(INPUT_014_023[7], true, 20400);
+        INPUT_014_023_HH[8] := analog_to_bool(INPUT_014_023[8], true, 20400);
+        INPUT_014_023_HH[9] := analog_to_bool(INPUT_014_023[9], true, 20400);
+
+        INPUT_024_027_HH[0] := analog_to_bool(INPUT_024_027[0], true, 15600);
+        INPUT_024_027_HH[1] := analog_to_bool(INPUT_024_027[1], true, 15600);
+        INPUT_024_027_HH[2] := analog_to_bool(INPUT_024_027[2], true, 15600);
+        INPUT_024_027_HH[3] := analog_to_bool(INPUT_024_027[3], true, 15600);
+
+        wait[0,0]; to votting
+
+    
+    // Print functions for debug only
+    /* 
+    from start_print1
+        //state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027
+        start f_print_b(OUTPUT_3);          
+        to end_print1
+
+    from end_print1
+        sync f_print_b tmp_print;
+        to start_writing
+    
+    from start_print1
+       
+        start f_print_b(INPUT_28_CMZ);
+        to end_print1
+
+    from end_print1
+        sync f_print_b tmp_print;
+        to initial*/
+
+    from votting
+        state_vote_2oo7_INPUT_001_007_ON := v2oo7(INPUT_001_007_HH[0], INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5], INPUT_001_007_HH[6]);
+        state_vote_1oo7_INPUT_001_007_ON := v1oo7(INPUT_001_007_HH[0], INPUT_001_007_HH[1], INPUT_001_007_HH[2], INPUT_001_007_HH[3], INPUT_001_007_HH[4], INPUT_001_007_HH[5], INPUT_001_007_HH[6]);
+        state_vote_2oo5_INPUT_009_013 := v2oo5(INPUT_009_013_HH[0], INPUT_009_013_HH[1], INPUT_009_013_HH[2], INPUT_009_013_HH[3], INPUT_009_013_HH[4]);
+        state_vote_2oo10_INPUT_014_023 := v2oo10(INPUT_014_023_HH[0], INPUT_014_023_HH[1], INPUT_014_023_HH[2], INPUT_014_023_HH[3], INPUT_014_023_HH[4], INPUT_014_023_HH[5], INPUT_014_023_HH[6], INPUT_014_023_HH[7], INPUT_014_023_HH[8], INPUT_014_023_HH[9]);               
+        state_vote_2oo4_INPUT_024_027  := v2oo4(INPUT_024_027_HH[0], INPUT_024_027_HH[1], INPUT_024_027_HH[2], INPUT_024_027_HH[3]);
+
+        wait[0,0]; to start_ust_2oo7
+
+    from start_ust_2oo7
+        portTON_IN_1! state_vote_2oo7_INPUT_001_007_ON;
+        to end_ust_2oo7
+
+    from end_ust_2oo7
+        portTON_Q_1? TON_Q_1;  state_vote_2oo7_INPUT_001_007 := TON_Q_1 and state_vote_2oo7_INPUT_001_007_ON; to start_ust_1oo7
+
+    from start_ust_1oo7
+        portTON_IN_2! state_vote_1oo7_INPUT_001_007_ON;
+        to end_ust_1oo7
+
+    from end_ust_1oo7
+        portTON_Q_2? TON_Q_2;  state_vote_1oo7_INPUT_001_007 := TON_Q_2 and state_vote_1oo7_INPUT_001_007_ON; to initial
+    
+    from initial wait[0,0]; to rung_1
+
+    from rung_1         
+        OUTPUT_1 := state_vote_2oo7_INPUT_001_007 or (state_vote_1oo7_INPUT_001_007 and INPUT_008_L) or state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to rung_3    
+
+    from rung_3 
+        if INPUT_28_CMZ=1 then
+            OUTPUT_2 := false; 
+            wait[0,0]; to rung_4
+        else
+            OUTPUT_2 := (OUTPUT_2 or (state_vote_2oo7_INPUT_001_007 or state_vote_1oo7_INPUT_001_007 or INPUT_008_L));
+            wait[0,0]; to rung_4
+        end       
+        
+
+    from rung_4 
+        OUTPUT_3 := state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to rung_5
+        
+
+    from rung_5
+        OUTPUT_4 := state_vote_2oo7_INPUT_001_007 or (state_vote_1oo7_INPUT_001_007 and INPUT_008_L) or state_vote_2oo5_INPUT_009_013 or state_vote_2oo10_INPUT_014_023 or state_vote_2oo4_INPUT_024_027;
+        wait[0,0]; to start_writing
+
+    from start_writing	
+        start f_write([OUTPUT_1, OUTPUT_2, OUTPUT_3, OUTPUT_4]); to end_writing    
+
+    from end_writing sync f_write result_output; to final    
+
+    from final  wait[5,5]; to start_reading
+
+///////////////////////////////////////////////////////////////////////// TON:
+
+process TON
+    [portIN: in bool, portQ: out bool, portTimer: sync]
+    is
+    states idle, running, elapsed
+    var IN: bool := false,
+        Q: bool := false
+    init
+        to idle
+    from idle select
+        portIN? IN;
+        if IN then
+            to running
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+    from running select
+        portIN? IN;
+        if not IN then
+            to idle
+        else
+            loop
+        end
+    []  portTimer; Q := true; to elapsed
+    []  portQ! Q; loop
+    end
+    from elapsed select
+        portIN? IN;
+        if not IN then
+            Q := false; to idle
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+
+///////////////////////////////////////////////////////////////////////// PLC:
+
+component PLC
+    is
+	port portTON_IN_1, portTON_IN_2: in out bool in [0,0],
+        portTON_Q_1, portTON_Q_2: in out bool in [0,0],
+        portTON_Timer_1, portTON_Timer_2: sync in [1000,1000] 
+    priority portTON_Timer_1 > portTON_Q_1,
+              portTON_Timer_2 > portTON_Q_2
+    par * in
+        Scan [portTON_IN_1, portTON_Q_1, portTON_IN_2, portTON_Q_2]
+	||  TON [portTON_IN_1, portTON_Q_1, portTON_Timer_1]
+    ||  TON [portTON_IN_2, portTON_Q_2, portTON_Timer_2]
+    end
+
+PLC

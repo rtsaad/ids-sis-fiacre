@@ -1,0 +1,4 @@
+rm -rf mce_oilngas.hippo
+rm mce_oilngas 
+frac2hippo mce_oilngas.fcr mce_oilngas.hippo/
+make

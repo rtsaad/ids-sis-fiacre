@@ -1,0 +1,4 @@
+rm -rf example.hippo
+rm example 
+frac2hippo example.fcr example.hippo/
+make

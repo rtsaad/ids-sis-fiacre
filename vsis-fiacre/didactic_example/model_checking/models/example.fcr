@@ -1,0 +1,290 @@
+///////////////////////////////////
+// Pre Processing Configuration  //
+///////////////////////////////////
+
+#ifndef VERIFY_EFFECT1  
+#define VERIFY_EFFECT1      FALSE
+#endif
+
+#ifndef VERIFY_EFFECT2  
+#define VERIFY_EFFECT2      FALSE
+#endif
+
+#ifndef VERIFY_EFFECT3 
+#define VERIFY_EFFECT3      FALSE
+#endif
+
+#ifndef VERIFY_EFFECT4  
+#define VERIFY_EFFECT4      FALSE
+#endif
+
+//////////////////////////////////
+
+const max_changes: nat is 1
+type changes is 0..max_changes
+
+
+type INPUT is array 8 of bool
+type OUTPUT is array 4 of bool
+
+function v2oo3(A: bool, B: bool, C: bool) : bool is
+	var Q: bool := false
+    begin
+		Q := (A and B) or (B and C) or (C and A);
+        return Q
+    end
+
+
+///////////////////////////////////////////////////////////////////////// SCAN:
+
+process Scan 
+	[portTON_IN_1: out bool, portTON_Q_1: in bool, portTON_IN_2: out bool, portTON_Q_2: in bool]                // used by IN_02
+	
+    is
+    states reading, initial, rung_1, rung_1_step2, rung_2, rung_2_step2, rung_3, rung_4, writing, final
+    var IN_01: bool := false,
+        IN_02: bool := false,
+        IN_03: bool := false,
+        IN_04: bool := false,
+        IN_05: bool := false,
+        IN_06A: bool := false,
+        IN_06B: bool := false,
+        IN_06C: bool := false,
+        state_n: changes := 0,
+		state_vote: bool := false,
+        Q_01: bool := false,
+        Q_02: bool := false,
+        Q_03: bool := false,
+        Q_04: bool := false,
+		TON_IN: bool := false,
+        TON_Q_1, TON_Q_2 : bool := false,
+        tmp: INPUT := [false,false,false,false,false,false,false,false],
+        tmp3: nat
+
+    init
+        to reading
+
+    from reading 
+    	IN_01 := tmp[0];
+    	IN_02 := tmp[1];
+    	IN_03 := tmp[2];
+    	IN_04 := tmp[3];
+    	IN_05 := tmp[4];
+    	IN_06A := tmp[5];
+    	IN_06B := tmp[6];
+    	IN_06C := tmp[7];    	
+    	wait[0,0]; to initial
+    
+    from initial wait[0,0]; to rung_1
+
+    from rung_1 portTON_IN_1! IN_02; to rung_1_step2
+    from rung_1_step2 portTON_Q_1? TON_Q_1; Q_01 := IN_01 or TON_Q_1; to rung_2
+
+    from rung_2 portTON_IN_2! IN_04; to rung_2_step2
+    from rung_2_step2 portTON_Q_2? TON_Q_2; Q_02 := (IN_01 and IN_03) or IN_05 or TON_Q_2; to rung_3
+    
+    from rung_3 Q_03 := IN_06A or IN_06B or IN_06C;  wait[0,0]; to rung_4
+
+    from rung_4 state_vote := v2oo3(IN_06A, IN_06B, IN_06C); Q_04 := state_vote or IN_05;  wait[0,0]; to writing
+
+    from writing wait[0,0]; to final    
+
+   from final
+        wait [1,1]; 										// SET WAIT TIME
+		if (state_n < max_changes) then
+#ifeq VERIFY_EFFECT1 TRUE
+			tmp[0] := any;
+			tmp[1] := any;
+#endif
+#ifeq VERIFY_EFFECT2 TRUE
+			tmp[0] := any; 
+			tmp[2] := any;
+			tmp[3] := any;
+			tmp[4] := any;
+#endif
+#ifeq VERIFY_EFFECT3 TRUE
+			tmp[5] := any;
+			tmp[6] := any;
+			tmp[7] := any;
+#endif
+#ifeq VERIFY_EFFECT4 TRUE
+			tmp[4] := any;
+			tmp[5] := any;
+			tmp[6] := any;
+			tmp[7] := any;
+#endif 
+			state_n := state_n+1
+		end;
+//
+        to reading	
+		
+///////////////////////////////////////////////////////////////////////// TON:
+
+process TON
+    [portIN: in bool, portQ: out bool, portTimer: sync]
+    is
+    states idle, running, elapsed
+    var IN: bool := false,
+        Q: bool := false
+    init
+        to idle
+    from idle select
+        portIN? IN;
+        if IN then
+            to running
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+    from running select
+        portIN? IN;
+        if not IN then
+            to idle
+        else
+            loop
+        end
+    []  portTimer; Q := true; to elapsed
+    []  portQ! Q; loop
+    end
+    from elapsed select
+        portIN? IN;
+        if not IN then
+            Q := false; to idle
+        else
+            loop
+        end
+    []  portQ! Q; loop
+    end
+
+///////////////////////////////////////////////////////////////////////// PLC:
+
+component PLC
+    is
+	port portTON_IN_1, portTON_IN_2: in out bool in [0,0],
+        portTON_Q_1, portTON_Q_2: in out bool in [0,0],
+        portTON_Timer_1, portTON_Timer_2: sync in [10,10]
+    priority portTON_Timer_1 > portTON_Q_1,
+             portTON_Timer_2 > portTON_Q_2
+    par * in
+        Scan [portTON_IN_1, portTON_Q_1, portTON_IN_2, portTON_Q_2]
+	||  TON [portTON_IN_1, portTON_Q_1, portTON_Timer_1]
+    ||  TON [portTON_IN_2, portTON_Q_2, portTON_Timer_2]
+    end
+
+
+
+///////////////////////////////////////////////////////////////////////// Verification Only
+
+///////////////////////////////////////////////////////////////////////// VOTING:
+
+type bit is 0..1
+
+function bool2bit (b: bool) : bit is
+    begin
+        if b then
+            return 1
+        else
+            return 0
+        end
+    end
+
+// Here is every Fcrpoll info in this list...
+
+function vote1oo3(a0: bool, b0: bool, c0: bool) : bool is
+    begin
+        return (bool2bit(a0) + bool2bit(b0) + bool2bit(c0) >= 1)
+    end
+
+
+function vote2oo3(a0: bool, b0: bool, c0: bool) : bool is
+    begin
+        return (bool2bit(a0) + bool2bit(b0) + bool2bit(c0) >= 2)
+    end
+
+PLC
+///////////////////////////////////////////////////////////////////////// OBSERVER:
+
+process timed_input [ITrue,IFalse,T: sync] is
+    states varFalse , varTrueUntimed , varTrueTimed
+    init to
+        varFalse
+    from varFalse
+        ITrue; to varTrueUntimed
+    from varTrueUntimed select
+        T; to varTrueTimed
+    []  IFalse; to varFalse
+    end
+    from varTrueTimed
+        IFalse; to varFalse
+
+// Here is every Fcrtimer info in this list...
+
+#ifeq VERIFY_EFFECT1 TRUE
+component obs_IN_02_10 is
+    port ITrue: sync in [0,0] is  (PLC/1/value IN_02) and (PLC/1/state initial),
+        IFalse: sync in [0,0] is  (PLC/1/value (not IN_02)) and (PLC/1/state initial),
+        T: sync in [10,10]
+    priority IFalse > T
+    par
+        timed_input [ITrue,IFalse,T]
+    end
+
+obs_IN_02_10 > PLC
+#endif
+
+#ifeq VERIFY_EFFECT2 TRUE
+component obs_IN_04_10 is
+    port ITrue: sync in [0,0] is  (PLC/1/value IN_04) and (PLC/1/state initial),
+        IFalse: sync in [0,0] is  (PLC/1/value (not IN_04)) and (PLC/1/state initial),
+        T: sync in [10,10]
+    priority IFalse > T
+    par
+        timed_input [ITrue,IFalse,T]
+    end
+
+obs_IN_04_10 > PLC
+#endif
+
+
+//property timer_will_happen is ltl <> (obs_IN_02_10/1/state varTrueTimed)
+//assert timer_will_happen
+
+property write is ltl (PLC/1/state writing)
+
+#ifeq VERIFY_EFFECT1 TRUE
+property cause_1 is ltl (PLC/1/value IN_01 or obs_IN_02_10/1/state varTrueTimed)
+property effect_1 is ltl (PLC/1/value Q_01)
+property n_df_1 is ltl []((write and cause_1) => effect_1)
+property n_sf_1 is ltl []not (write and (not cause_1) and (effect_1))
+assert n_df_1
+assert n_sf_1
+#endif
+
+
+#ifeq VERIFY_EFFECT2 TRUE
+property cause_2 is ltl ((PLC/1/value IN_01 and PLC/1/value IN_03) or PLC/1/value IN_05 or obs_IN_04_10/1/state varTrueTimed)
+property effect_2 is ltl (PLC/1/value Q_02)
+property n_df_2 is ltl []((write and cause_2) => effect_2)
+property n_sf_2 is ltl [] not (write and (not cause_2) and (effect_2))
+assert n_df_2
+assert n_sf_2
+#endif
+
+#ifeq VERIFY_EFFECT3 TRUE
+property cause_3 is ltl ((PLC/1/value IN_06A or PLC/1/value IN_06B or PLC/1/value IN_06C))
+property effect_3 is ltl (PLC/1/value Q_03)
+property n_df_3 is ltl []((write and cause_3) => effect_3)
+property n_sf_3 is ltl [] not (write and (not cause_3) and (effect_3))
+assert n_df_3
+assert n_sf_3 
+#endif
+
+#ifeq VERIFY_EFFECT4 TRUE
+property cause_4 is ltl ((PLC/1/value (vote2oo3(IN_06A, IN_06B, IN_06C)) or PLC/1/value IN_05))
+property effect_4 is ltl (PLC/1/value Q_04)
+property n_df_4 is ltl []((write and cause_4) => effect_4)
+property n_sf_4 is ltl [] not (write and (not cause_4) and (effect_4))
+assert n_df_4
+assert n_sf_4 
+#endif 
