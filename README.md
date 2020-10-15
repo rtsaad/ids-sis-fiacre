@@ -30,7 +30,7 @@ This project is organized in three folders, they are:
 
 ## Instalation
 
-It is not necessary to install any tool only to run this project as it comes. However, if you decide to change the FIACRE model (VSIS folders), you have to install a building package for C language (such as GCC) for your changes to take effect. Also, if you decide to formally verify the VSIS, you have to install the Tina toolbox [[4]](#4) to execute the model checking toolchain.
+It is not necessary to install any tool only to run this project on **LINUX** as it comes. However, if you decide to change the FIACRE model (VSIS folders), you have to install a building package for C language (such as GCC) for your changes to take effect. Also, if you decide to formally verify the VSIS, you have to install the Tina toolbox [[4]](#4) to execute the model checking toolchain.
 
 ### Configuration
 
