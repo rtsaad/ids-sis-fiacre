@@ -96,8 +96,7 @@ Intrusion Detection System for Safety Instrumented System
 Paul Gruhn, P. E. "Safety instrumented systems: design, analysis, and justification." (2006).
 
 <a id="3">[3]</a>
-TODO: add
-hippo,
+hippo,  http://www.laas.fr/hippo
 
 <a id="4">[4]</a>
 Tina Toolbox, http://projects.laas.fr/tina//
