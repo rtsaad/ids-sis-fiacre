@@ -8,7 +8,7 @@ You need to install the following tools to reproduce the model checking experime
 
 1. Tina toolbox (http://projects.laas.fr/tina//);
 2. Fiacre (http://projects.laas.fr/fiacre/)
-3. Hippo (TODO). To avoid compatibility problems with the 'frac' name, rename the 'frac' binary from the hippo lib to 'frac2hippo';
+3. Hippo (http://www.laas.fr/hippo). To avoid compatibility problems with the 'frac' name, rename the 'frac' binary from the hippo lib to 'frac2hippo';
 4. Gpp preprocessor (https://logological.org/gpp);
 5. building package for C language (such as gcc) to compile the models.
 
